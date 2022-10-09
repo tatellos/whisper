@@ -167,6 +167,8 @@ def transcribe(
         if verbose:
             print(f"[{format_timestamp(start)} --> {format_timestamp(end)}] {text}")
 
+        return text
+
     # show the progress bar when verbose is False (otherwise the transcribed text will be printed)
     num_frames = mel.shape[-1]
     previous_seek_value = seek
@@ -204,7 +206,7 @@ def transcribe(
                     end_timestamp_position = (
                         sliced_tokens[-1].item() - tokenizer.timestamp_begin
                     )
-                    add_segment(
+                    yield add_segment(
                         start=timestamp_offset + start_timestamp_position * time_precision,
                         end=timestamp_offset + end_timestamp_position * time_precision,
                         text_tokens=sliced_tokens[1:-1],
@@ -225,7 +227,7 @@ def transcribe(
                     last_timestamp_position = timestamps[-1].item() - tokenizer.timestamp_begin
                     duration = last_timestamp_position * time_precision
 
-                add_segment(
+                yield add_segment(
                     start=timestamp_offset,
                     end=timestamp_offset + duration,
                     text_tokens=tokens,
@@ -243,7 +245,7 @@ def transcribe(
             pbar.update(min(num_frames, seek) - previous_seek_value)
             previous_seek_value = seek
 
-    return dict(text=tokenizer.decode(all_tokens[len(initial_prompt):]), segments=all_segments, language=language)
+    # return dict(text=tokenizer.decode(all_tokens[len(initial_prompt):]), segments=all_segments, language=language)
 
 
 def cli():
